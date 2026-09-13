@@ -58,6 +58,7 @@ private:
     QTableWidget* tableTaiKhoan;
 
     // --- Các Tab Employee ---
+    QLabel* lblEmpAvatar;
     QLabel* lblEmpMaNV;
     QLabel* lblEmpHoTen;
     QLineEdit* editEmpSDT;
@@ -111,6 +112,7 @@ private slots:
     void onXoaNhanVienKhoiCa();
     void onXoaCaBoSung();
     void onNgayLichChanged();
+    void onLuuDuLieuLich();
 
     void onAdminChamCongVao();
     void onAdminChamCongRa();
@@ -122,6 +124,7 @@ private slots:
     void onXoaTaiKhoan();
 
     // Employee slots
+    void onEmpDoiAvatar();
     void onEmpCapNhatLienHe();
     void onEmpDoiMatKhau();
     void onEmpChamCongVao();

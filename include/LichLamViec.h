@@ -26,10 +26,16 @@ public:
     // Tự động khởi tạo 3 ca cố định (Sáng 07:00-12:00, Chiều 12:00-17:00, Tối 17:00-22:00) cho một ngày nếu chưa có
     void khoiTao3CaCoDinhNeuChuaCo(const std::string& ngay);
 
+    // Tìm ca làm việc của một nhân viên trong ngày (nếu chưa có trả về "")
+    std::string timCaCuaNhanVienTrongNgay(const std::string& ngay, const std::string& maNV) const;
+
+    // Chuẩn hóa và khử trùng lặp: khử trùng lặp mã ca trong ngày, khử trùng lặp nhân viên trong cùng một ca
+    void chuanHoaLich();
+
     std::vector<CaLamViec> xemLichNgay(const std::string& ngay) const;
     std::vector<CaLamViec> xemLichNhanVien(const std::string& maNV) const; // toàn bộ ca của 1 NV
     const std::map<std::string, std::vector<CaLamViec>>& getToanBoLich() const;
 
-    void luuFile(const std::string& duongDan) const;
+    void luuFile(const std::string& duongDan);
     void taiFile(const std::string& duongDan);
 };

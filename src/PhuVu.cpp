@@ -2,9 +2,10 @@
 #include <iostream>
 
 PhuVu::PhuVu(std::string maNV, std::string hoTen, std::string sdt,
-             std::string email, std::string ngayVaoLam, double luongTheoGio)
+             std::string email, std::string ngayVaoLam, double luongTheoGio,
+             std::string avatar)
     : NhanVien(std::move(maNV), std::move(hoTen), std::move(sdt), std::move(email),
-               std::move(ngayVaoLam), luongTheoGio) {}
+               std::move(ngayVaoLam), luongTheoGio, std::move(avatar)) {}
 
 double PhuVu::getLuongTheoGio() const { return getLuongCoBan(); }
 void PhuVu::setLuongTheoGio(double luong) { setLuongCoBan(luong); }
@@ -20,5 +21,5 @@ void PhuVu::hienThiThongTin() const {
 }
 
 std::string PhuVu::toCSV() const {
-    return NhanVien::toCSV();
+    return NhanVien::toCSV() + "," + avatar;
 }

@@ -2,9 +2,10 @@
 #include <iostream>
 
 BaoVe::BaoVe(std::string maNV, std::string hoTen, std::string sdt,
-             std::string email, std::string ngayVaoLam, double luongCung)
+             std::string email, std::string ngayVaoLam, double luongCung,
+             std::string avatar)
     : NhanVien(std::move(maNV), std::move(hoTen), std::move(sdt), std::move(email),
-               std::move(ngayVaoLam), luongCung) {}
+               std::move(ngayVaoLam), luongCung, std::move(avatar)) {}
 
 double BaoVe::getLuongCung() const { return getLuongCoBan(); }
 void BaoVe::setLuongCung(double luong) { setLuongCoBan(luong); }
@@ -21,5 +22,5 @@ void BaoVe::hienThiThongTin() const {
 }
 
 std::string BaoVe::toCSV() const {
-    return NhanVien::toCSV();
+    return NhanVien::toCSV() + "," + avatar;
 }

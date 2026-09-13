@@ -10,7 +10,7 @@ private:
 public:
     ThuNgan(std::string maNV, std::string hoTen, std::string sdt,
             std::string email, std::string ngayVaoLam, double luongTheoGio,
-            double phuCapTrachNhiem);
+            double phuCapTrachNhiem, std::string avatar = "");
 
     double getLuongTheoGio() const;
     double getPhuCap() const;

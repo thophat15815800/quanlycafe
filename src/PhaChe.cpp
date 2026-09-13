@@ -3,9 +3,10 @@
 #include <iomanip>
 
 PhaChe::PhaChe(std::string maNV, std::string hoTen, std::string sdt,
-               std::string email, std::string ngayVaoLam, double luongTheoGio)
+               std::string email, std::string ngayVaoLam, double luongTheoGio,
+               std::string avatar)
     : NhanVien(std::move(maNV), std::move(hoTen), std::move(sdt), std::move(email),
-               std::move(ngayVaoLam), luongTheoGio) {}
+               std::move(ngayVaoLam), luongTheoGio, std::move(avatar)) {}
 
 double PhaChe::getLuongTheoGio() const { return getLuongCoBan(); }
 void PhaChe::setLuongTheoGio(double luong) { setLuongCoBan(luong); }
@@ -21,5 +22,5 @@ void PhaChe::hienThiThongTin() const {
 }
 
 std::string PhaChe::toCSV() const {
-    return NhanVien::toCSV();
+    return NhanVien::toCSV() + "," + avatar;
 }

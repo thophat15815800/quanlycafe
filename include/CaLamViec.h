@@ -27,6 +27,7 @@ public:
     bool themNhanVien(const std::string& maNV);   // false nếu đã có
     bool xoaNhanVien(const std::string& maNV);
     bool coNhanVien(const std::string& maNV) const;
+    void setDsNhanVien(const std::vector<std::string>& ds);
 
     std::string toCSV() const;             // maCa;ngay;tenCa;batdau;ketthuc;nv1|nv2|nv3
     static CaLamViec fromCSV(const std::string& line);

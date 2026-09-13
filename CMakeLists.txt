@@ -29,10 +29,13 @@ set(BACKEND_SOURCES
 )
 
 set(GUI_SOURCES
+    gui/AvatarHelper.h
     gui/LoginDialog.h
     gui/LoginDialog.cpp
     gui/AddEmployeeDialog.h
     gui/AddEmployeeDialog.cpp
+    gui/EditEmployeeDialog.h
+    gui/EditEmployeeDialog.cpp
     gui/MainWindow.h
     gui/MainWindow.cpp
     gui/main_gui.cpp

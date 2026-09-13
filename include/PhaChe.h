@@ -7,7 +7,8 @@
 class PhaChe : public NhanVien {
 public:
     PhaChe(std::string maNV, std::string hoTen, std::string sdt,
-           std::string email, std::string ngayVaoLam, double luongTheoGio);
+           std::string email, std::string ngayVaoLam, double luongTheoGio,
+           std::string avatar = "");
 
     double getLuongTheoGio() const;
     void setLuongTheoGio(double luong);

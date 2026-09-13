@@ -2,9 +2,9 @@
 
 QuanLy::QuanLy(std::string maNV, std::string hoTen, std::string sdt,
                std::string email, std::string ngayVaoLam, double luongCung,
-               double phuCapQuanLy)
+               double phuCapQuanLy, std::string avatar)
     : NhanVien(std::move(maNV), std::move(hoTen), std::move(sdt), std::move(email),
-               std::move(ngayVaoLam), luongCung),
+               std::move(ngayVaoLam), luongCung, std::move(avatar)),
       phuCapQuanLy(phuCapQuanLy) {}
 
 double QuanLy::getLuongCung() const { return getLuongCoBan(); }
@@ -25,5 +25,5 @@ void QuanLy::hienThiThongTin() const {
 }
 
 std::string QuanLy::toCSV() const {
-    return NhanVien::toCSV() + "," + std::to_string(phuCapQuanLy);
+    return NhanVien::toCSV() + "," + std::to_string(phuCapQuanLy) + "," + avatar;
 }

@@ -20,7 +20,7 @@ bool FileManager::luuNhanVien(const std::vector<std::unique_ptr<NhanVien>>& ds,
     return true;
 }
 
-// Cột: maNV,hoTen,sdt,email,ngayVaoLam,luongCoBan,trangThai,loai[,phuCap]
+// Cột: maNV,hoTen,sdt,email,ngayVaoLam,luongCoBan,trangThai,loai[,phuCap][,avatar]
 std::unique_ptr<NhanVien> FileManager::taoTuDong(const std::string& line) {
     auto p = Utils::splitAndTrim(line, ',');
     if (p.size() < 8) return nullptr;
@@ -30,20 +30,26 @@ std::unique_ptr<NhanVien> FileManager::taoTuDong(const std::string& line) {
     try { luongCoBan = std::stod(p[5]); } catch (...) { luongCoBan = 0; }
     TrangThaiNV tt = chuoiToTrangThai(p[6]);
     std::string loai = p[7];
+    std::string avatar = "";
 
     std::unique_ptr<NhanVien> nv;
     if (loai == "PHA_CHE") {
-        nv = std::make_unique<PhaChe>(maNV, hoTen, sdt, email, ngay, luongCoBan);
+        if (p.size() >= 9) avatar = p[8];
+        nv = std::make_unique<PhaChe>(maNV, hoTen, sdt, email, ngay, luongCoBan, avatar);
     } else if (loai == "THU_NGAN") {
         double phuCap = (p.size() >= 9) ? std::stod(p[8]) : 0;
-        nv = std::make_unique<ThuNgan>(maNV, hoTen, sdt, email, ngay, luongCoBan, phuCap);
+        if (p.size() >= 10) avatar = p[9];
+        nv = std::make_unique<ThuNgan>(maNV, hoTen, sdt, email, ngay, luongCoBan, phuCap, avatar);
     } else if (loai == "QUAN_LY") {
         double phuCap = (p.size() >= 9) ? std::stod(p[8]) : 0;
-        nv = std::make_unique<QuanLy>(maNV, hoTen, sdt, email, ngay, luongCoBan, phuCap);
+        if (p.size() >= 10) avatar = p[9];
+        nv = std::make_unique<QuanLy>(maNV, hoTen, sdt, email, ngay, luongCoBan, phuCap, avatar);
     } else if (loai == "PHU_VU") {
-        nv = std::make_unique<PhuVu>(maNV, hoTen, sdt, email, ngay, luongCoBan);
+        if (p.size() >= 9) avatar = p[8];
+        nv = std::make_unique<PhuVu>(maNV, hoTen, sdt, email, ngay, luongCoBan, avatar);
     } else if (loai == "BAO_VE") {
-        nv = std::make_unique<BaoVe>(maNV, hoTen, sdt, email, ngay, luongCoBan);
+        if (p.size() >= 9) avatar = p[8];
+        nv = std::make_unique<BaoVe>(maNV, hoTen, sdt, email, ngay, luongCoBan, avatar);
     } else {
         return nullptr;
     }

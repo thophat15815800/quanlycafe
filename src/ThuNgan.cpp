@@ -3,9 +3,9 @@
 
 ThuNgan::ThuNgan(std::string maNV, std::string hoTen, std::string sdt,
                   std::string email, std::string ngayVaoLam, double luongTheoGio,
-                  double phuCapTrachNhiem)
+                  double phuCapTrachNhiem, std::string avatar)
     : NhanVien(std::move(maNV), std::move(hoTen), std::move(sdt), std::move(email),
-               std::move(ngayVaoLam), luongTheoGio),
+               std::move(ngayVaoLam), luongTheoGio, std::move(avatar)),
       phuCapTrachNhiem(phuCapTrachNhiem) {}
 
 double ThuNgan::getLuongTheoGio() const { return getLuongCoBan(); }
@@ -23,5 +23,5 @@ void ThuNgan::hienThiThongTin() const {
 }
 
 std::string ThuNgan::toCSV() const {
-    return NhanVien::toCSV() + "," + std::to_string(phuCapTrachNhiem);
+    return NhanVien::toCSV() + "," + std::to_string(phuCapTrachNhiem) + "," + avatar;
 }

@@ -10,7 +10,7 @@ private:
 public:
     QuanLy(std::string maNV, std::string hoTen, std::string sdt,
            std::string email, std::string ngayVaoLam, double luongCung,
-           double phuCapQuanLy);
+           double phuCapQuanLy, std::string avatar = "");
 
     double getLuongCung() const;
     double getPhuCapQuanLy() const;

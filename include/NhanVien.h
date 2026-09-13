@@ -20,10 +20,12 @@ protected:
     std::string ngayVaoLam;   // dd/mm/yyyy
     double luongCoBan;        // ý nghĩa tùy loại NV (lương/giờ hoặc lương cứng)
     TrangThaiNV trangThai;
+    std::string avatar;       // đường dẫn tương đối hoặc tuyệt đối tới file ảnh (vd: "data/avatars/NV1.png")
 
 public:
     NhanVien(std::string maNV, std::string hoTen, std::string sdt,
-             std::string email, std::string ngayVaoLam, double luongCoBan);
+             std::string email, std::string ngayVaoLam, double luongCoBan,
+             std::string avatar = "");
     virtual ~NhanVien() = default;
 
     // ---- Getter/Setter có kiểm tra hợp lệ (đóng gói dữ liệu) ----
@@ -39,6 +41,8 @@ public:
     void setLuongCoBan(double luong);
     TrangThaiNV getTrangThai() const;
     void setTrangThai(TrangThaiNV tt);
+    std::string getAvatar() const;
+    void setAvatar(const std::string& avt);
 
     // ============ ĐA HÌNH (POLYMORPHISM) - hàm ảo thuần =============
     virtual double tinhLuong(double soGioLam) const = 0;   // công thức khác nhau theo lớp con

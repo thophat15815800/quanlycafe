@@ -6,7 +6,8 @@
 class BaoVe : public NhanVien {
 public:
     BaoVe(std::string maNV, std::string hoTen, std::string sdt,
-          std::string email, std::string ngayVaoLam, double luongCung);
+          std::string email, std::string ngayVaoLam, double luongCung,
+          std::string avatar = "");
 
     double getLuongCung() const;
     void setLuongCung(double luong);

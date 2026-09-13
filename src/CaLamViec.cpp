@@ -31,6 +31,10 @@ bool CaLamViec::coNhanVien(const std::string& maNV) const {
     return std::find(dsMaNV.begin(), dsMaNV.end(), maNV) != dsMaNV.end();
 }
 
+void CaLamViec::setDsNhanVien(const std::vector<std::string>& ds) {
+    dsMaNV = ds;
+}
+
 std::string CaLamViec::toCSV() const {
     std::string nvStr;
     for (size_t i = 0; i < dsMaNV.size(); ++i) {

@@ -1,5 +1,7 @@
 #include "MainWindow.h"
 #include "AddEmployeeDialog.h"
+#include "EditEmployeeDialog.h"
+#include "AvatarHelper.h"
 #include "LoginDialog.h"
 #include "Utils.h"
 #include <QVBoxLayout>
@@ -9,9 +11,25 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QFileDialog>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QFormLayout>
+#include <QEvent>
+
+namespace {
+class WheelBlocker : public QObject {
+public:
+    explicit WheelBlocker(QObject* parent = nullptr) : QObject(parent) {}
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override {
+        if (event->type() == QEvent::Wheel) {
+            return true; // Chặn cuộn chuột vô tình làm đổi ngày/tháng/năm
+        }
+        return QObject::eventFilter(obj, event);
+    }
+};
+}
 
 MainWindow::MainWindow(QuanLyQuanCafe& cafeApp, QuanLyTaiKhoan& tkManager,
                        const std::string& dataDir, QWidget* parent)
@@ -149,11 +167,15 @@ void MainWindow::buildAdminTabs() {
     nvLayout->addLayout(filterLayout);
 
     tableNhanVien = new QTableWidget();
-    tableNhanVien->setColumnCount(7);
-    tableNhanVien->setHorizontalHeaderLabels({"Ma NV", "Ho va Ten", "Vi Tri", "So Dien Thoai", "Email", "Trang Thai", "Luong Co Ban"});
+    tableNhanVien->setColumnCount(8);
+    tableNhanVien->setHorizontalHeaderLabels({"Anh", "Ma NV", "Ho va Ten", "Vi Tri", "So Dien Thoai", "Email", "Trang Thai", "Luong Co Ban"});
     tableNhanVien->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    tableNhanVien->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+    tableNhanVien->setColumnWidth(0, 56);
+    tableNhanVien->verticalHeader()->setDefaultSectionSize(46);
     tableNhanVien->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableNhanVien->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    connect(tableNhanVien, &QTableWidget::cellDoubleClicked, this, &MainWindow::onSuaNhanVien);
     nvLayout->addWidget(tableNhanVien);
 
     // Hàng nút chức năng nhân viên
@@ -183,10 +205,15 @@ void MainWindow::buildAdminTabs() {
     dateLich = new QDateEdit(QDate::currentDate());
     dateLich->setCalendarPopup(true);
     dateLich->setDisplayFormat("dd/MM/yyyy");
+    dateLich->installEventFilter(new WheelBlocker(dateLich));
     datePickLayout->addWidget(dateLich);
 
-    QLabel* lblGhiChu = new QLabel(" (Moi ngay tu dong co 3 ca co dinh: Ca Sang, Ca Chieu, Ca Toi)");
-    lblGhiChu->setStyleSheet("color: #6F4E37; font-style: italic;");
+    QPushButton* btnLuuLich = new QPushButton("Luu Du Lieu Lich Lam", this);
+    btnLuuLich->setStyleSheet("background-color: #2E7D32; color: white; font-weight: bold; padding: 5px 14px; border-radius: 3px;");
+    datePickLayout->addWidget(btnLuuLich);
+
+    QLabel* lblGhiChu = new QLabel(" (1 NV co the lam nhieu ca khong trung gio trong ngay)");
+    lblGhiChu->setStyleSheet("color: #2E7D32; font-style: italic;");
     datePickLayout->addWidget(lblGhiChu);
     datePickLayout->addStretch();
     lichLayout->addLayout(datePickLayout);
@@ -286,6 +313,7 @@ void MainWindow::buildAdminTabs() {
     luongTop->addWidget(new QLabel("Chon Thang/Nam:"));
     dateThangLuong = new QDateEdit(QDate::currentDate());
     dateThangLuong->setDisplayFormat("MM/yyyy");
+    dateThangLuong->installEventFilter(new WheelBlocker(dateThangLuong));
     luongTop->addWidget(dateThangLuong);
 
     QPushButton* btnCalc = new QPushButton("Tinh Bang Luong Thang");
@@ -349,6 +377,7 @@ void MainWindow::buildAdminTabs() {
     connect(btnXoaCa, &QPushButton::clicked, this, &MainWindow::onXoaCaBoSung);
     connect(btnXepCa, &QPushButton::clicked, this, &MainWindow::onXepCa);
     connect(btnXoaNV, &QPushButton::clicked, this, &MainWindow::onXoaNhanVienKhoiCa);
+    connect(btnLuuLich, &QPushButton::clicked, this, &MainWindow::onLuuDuLieuLich);
 
     connect(btnVao, &QPushButton::clicked, this, &MainWindow::onAdminChamCongVao);
     connect(btnRa, &QPushButton::clicked, this, &MainWindow::onAdminChamCongRa);
@@ -380,8 +409,29 @@ void MainWindow::buildEmployeeTabs() {
     QHBoxLayout* hProfile = new QHBoxLayout(tabProfile);
 
     QGroupBox* boxInfo = new QGroupBox("Ho So Nhan Vien");
-    QFormLayout* fInfo = new QFormLayout(boxInfo);
-    fInfo->setSpacing(12);
+    QVBoxLayout* vbInfo = new QVBoxLayout(boxInfo);
+    vbInfo->setSpacing(12);
+
+    QHBoxLayout* empAvatarLayout = new QHBoxLayout();
+    empAvatarLayout->setSpacing(14);
+    lblEmpAvatar = new QLabel(this);
+    lblEmpAvatar->setFixedSize(88, 88);
+    lblEmpAvatar->setAlignment(Qt::AlignCenter);
+    empAvatarLayout->addWidget(lblEmpAvatar);
+
+    QVBoxLayout* empAvatarBtnLayout = new QVBoxLayout();
+    empAvatarBtnLayout->setAlignment(Qt::AlignVCenter);
+    QPushButton* btnEmpDoiAvatar = new QPushButton("Doi Anh Dai Dien", this);
+    btnEmpDoiAvatar->setFixedHeight(32);
+    btnEmpDoiAvatar->setStyleSheet("background-color: #8D6E63; color: white; border-radius: 4px; padding: 0 12px; font-weight: 500;");
+    connect(btnEmpDoiAvatar, &QPushButton::clicked, this, &MainWindow::onEmpDoiAvatar);
+    empAvatarBtnLayout->addWidget(btnEmpDoiAvatar);
+    empAvatarLayout->addLayout(empAvatarBtnLayout);
+    empAvatarLayout->addStretch();
+    vbInfo->addLayout(empAvatarLayout);
+
+    QFormLayout* fInfo = new QFormLayout();
+    fInfo->setSpacing(10);
 
     lblEmpMaNV = new QLabel(QString::fromStdString(maNV));
     lblEmpHoTen = new QLabel(nv ? QString::fromStdString(nv->getHoTen()) : "");
@@ -400,6 +450,7 @@ void MainWindow::buildEmployeeTabs() {
     fInfo->addRow("So dien thoai:", editEmpSDT);
     fInfo->addRow("Email:", editEmpEmail);
     fInfo->addRow("", btnUpdateContact);
+    vbInfo->addLayout(fInfo);
     hProfile->addWidget(boxInfo);
 
     QGroupBox* boxPass = new QGroupBox("Doi Mat Khau Ca Nhan");
@@ -464,6 +515,7 @@ void MainWindow::buildEmployeeTabs() {
     luongTop->addWidget(new QLabel("Chon Thang/Nam:"));
     dateEmpThangLuong = new QDateEdit(QDate::currentDate());
     dateEmpThangLuong->setDisplayFormat("MM/yyyy");
+    dateEmpThangLuong->installEventFilter(new WheelBlocker(dateEmpThangLuong));
     luongTop->addWidget(dateEmpThangLuong);
     luongTop->addStretch();
     vlLuong->addLayout(luongTop);
@@ -545,13 +597,18 @@ void MainWindow::onLocVaTimKiemNV() {
 
     tableNhanVien->setRowCount(ds.size());
     for (size_t i = 0; i < ds.size(); ++i) {
-        tableNhanVien->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(ds[i]->getMaNV())));
-        tableNhanVien->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(ds[i]->getHoTen())));
-        tableNhanVien->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(ds[i]->loaiNhanVien())));
-        tableNhanVien->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(ds[i]->getSdt())));
-        tableNhanVien->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(ds[i]->getEmail())));
-        tableNhanVien->setItem(i, 5, new QTableWidgetItem(QString::fromStdString(trangThaiToChuoi(ds[i]->getTrangThai()))));
-        tableNhanVien->setItem(i, 6, new QTableWidgetItem(QString("%L1 VND").arg(ds[i]->getLuongCoBan(), 0, 'f', 0)));
+        QLabel* lblImg = new QLabel();
+        lblImg->setAlignment(Qt::AlignCenter);
+        lblImg->setPixmap(AvatarHelper::getAvatarPixmap(ds[i]->getAvatar(), ds[i]->getHoTen(), 36));
+        tableNhanVien->setCellWidget(i, 0, lblImg);
+
+        tableNhanVien->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(ds[i]->getMaNV())));
+        tableNhanVien->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(ds[i]->getHoTen())));
+        tableNhanVien->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(ds[i]->loaiNhanVien())));
+        tableNhanVien->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(ds[i]->getSdt())));
+        tableNhanVien->setItem(i, 5, new QTableWidgetItem(QString::fromStdString(ds[i]->getEmail())));
+        tableNhanVien->setItem(i, 6, new QTableWidgetItem(QString::fromStdString(trangThaiToChuoi(ds[i]->getTrangThai()))));
+        tableNhanVien->setItem(i, 7, new QTableWidgetItem(QString("%L1 VND").arg(ds[i]->getLuongCoBan(), 0, 'f', 0)));
     }
 }
 
@@ -658,6 +715,7 @@ void MainWindow::refreshEmployeeInfo() {
     std::string maNV = qlTK.getMaNVHienTai();
     NhanVien* nv = app.timNhanVien(maNV);
     if (!nv) return;
+    lblEmpAvatar->setPixmap(AvatarHelper::getAvatarPixmap(nv->getAvatar(), nv->getHoTen(), 88));
     lblEmpMaNV->setText(QString::fromStdString(nv->getMaNV()));
     lblEmpHoTen->setText(QString::fromStdString(nv->getHoTen()));
     lblEmpLoaiNV->setText(QString::fromStdString(nv->loaiNhanVien()));
@@ -711,7 +769,7 @@ void MainWindow::refreshEmployeeLuong() {
 // =========================================================================
 void MainWindow::onThemNhanVien() {
     std::string maMoi = app.sinhMaNVMoi();
-    AddEmployeeDialog dlg(maMoi, this);
+    AddEmployeeDialog dlg(maMoi, thuMucDuLieu, this);
     if (dlg.exec() == QDialog::Accepted) {
         auto nv = dlg.getNhanVienMoi();
         if (nv) {
@@ -736,22 +794,17 @@ void MainWindow::onSuaNhanVien() {
         QMessageBox::warning(this, "Thong bao", "Vui long chon 1 nhan vien trong bang de sua!");
         return;
     }
-    std::string maNV = tableNhanVien->item(row, 0)->text().toStdString();
+    std::string maNV = tableNhanVien->item(row, 1)->text().toStdString();
     NhanVien* nv = app.timNhanVien(maNV);
     if (!nv) return;
 
-    bool ok = false;
-    QString tenMoi = QInputDialog::getText(this, "Sua Ho Ten", "Ho ten moi:", QLineEdit::Normal, QString::fromStdString(nv->getHoTen()), &ok);
-    if (ok && !tenMoi.trimmed().isEmpty()) nv->setHoTen(tenMoi.trimmed().toStdString());
-
-    QString sdtMoi = QInputDialog::getText(this, "Sua SDT", "So dien thoai moi:", QLineEdit::Normal, QString::fromStdString(nv->getSdt()), &ok);
-    if (ok && Utils::isValidSDT(sdtMoi.trimmed().toStdString())) nv->setSdt(sdtMoi.trimmed().toStdString());
-
-    QString emailMoi = QInputDialog::getText(this, "Sua Email", "Email moi:", QLineEdit::Normal, QString::fromStdString(nv->getEmail()), &ok);
-    if (ok && Utils::isValidEmail(emailMoi.trimmed().toStdString())) nv->setEmail(emailMoi.trimmed().toStdString());
-
-    onLuuDuLieu();
-    refreshTableNhanVien();
+    EditEmployeeDialog dlg(nv, thuMucDuLieu, this);
+    if (dlg.exec() == QDialog::Accepted) {
+        onLuuDuLieu();
+        refreshDashboard();
+        refreshTableNhanVien();
+        QMessageBox::information(this, "Thanh cong", "Da cap nhat thong tin nhan vien thanh cong!");
+    }
 }
 
 void MainWindow::onDoiTrangThai() {
@@ -760,7 +813,7 @@ void MainWindow::onDoiTrangThai() {
         QMessageBox::warning(this, "Thong bao", "Vui long chon 1 nhan vien de doi trang thai!");
         return;
     }
-    std::string maNV = tableNhanVien->item(row, 0)->text().toStdString();
+    std::string maNV = tableNhanVien->item(row, 1)->text().toStdString();
     NhanVien* nv = app.timNhanVien(maNV);
     if (!nv) return;
 
@@ -781,7 +834,7 @@ void MainWindow::onChoNghiViec() {
         QMessageBox::warning(this, "Thong bao", "Vui long chon 1 nhan vien!");
         return;
     }
-    std::string maNV = tableNhanVien->item(row, 0)->text().toStdString();
+    std::string maNV = tableNhanVien->item(row, 1)->text().toStdString();
     if (QMessageBox::question(this, "Xac nhan", QString("Ban co chac muon cho nhan vien %1 nghi viec?").arg(QString::fromStdString(maNV))) == QMessageBox::Yes) {
         app.xoaNhanVien(maNV);
         onLuuDuLieu();
@@ -843,13 +896,28 @@ void MainWindow::onXepCa() {
         return;
     }
 
+    CaLamViec* caHienTai = app.layLich().timCa(ngay, maCa);
+    if (caHienTai && caHienTai->coNhanVien(maNV)) {
+        QMessageBox::warning(this, "Thong bao", QString("Nhan vien %1 da co trong ca nay roi!").arg(QString::fromStdString(maNV)));
+        return;
+    }
+
+    if (caHienTai && app.layLich().bTrungCa(ngay, maNV, caHienTai->getGioBatDau(), caHienTai->getGioKetThuc())) {
+        QMessageBox::warning(this, "Trung gio lam viec",
+            QString("Nhan vien %1 da duoc xep ca khac co khung gio trung hoac chong cheo trong ngay %2!")
+            .arg(QString::fromStdString(maNV), QString::fromStdString(ngay)));
+        return;
+    }
+
     if (app.xepCa(ngay, maCa, maNV)) {
         onLuuDuLieu();
         refreshDashboard();
         refreshTableLichNgay();
-        QMessageBox::information(this, "Thanh cong", QString("Da chi dinh NV %1 vao ca %2!").arg(QString::fromStdString(maNV), QString::fromStdString(maCa)));
+        QMessageBox::information(this, "Thanh cong",
+            QString("Da chi dinh NV %1 vao ca %2 ngay %3 thanh cong!\n(1 NV co the lam tat ca cac ca trong ngay neu khong trung gio)")
+            .arg(QString::fromStdString(maNV), QString::fromStdString(maCa), QString::fromStdString(ngay)));
     } else {
-        QMessageBox::warning(this, "That bai", "Khong the xep ca (Nhan vien da co trong ca nay hoac bi trung gio lam viec khac trong ngay)!");
+        QMessageBox::warning(this, "That bai", "Khong the xep ca cho nhan vien nay!");
     }
 }
 
@@ -1018,6 +1086,29 @@ void MainWindow::onXoaTaiKhoan() {
 // =========================================================================
 // EMPLOYEE SLOTS
 // =========================================================================
+void MainWindow::onEmpDoiAvatar() {
+    std::string maNV = qlTK.getMaNVHienTai();
+    NhanVien* nv = app.timNhanVien(maNV);
+    if (!nv) return;
+
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        "Chon anh dai dien ca nhan",
+        "",
+        "Hinh anh (*.png *.jpg *.jpeg *.bmp)"
+    );
+
+    if (!filePath.isEmpty()) {
+        QString relPath = AvatarHelper::saveAvatarImage(filePath, maNV, thuMucDuLieu);
+        if (!relPath.isEmpty()) {
+            nv->setAvatar(relPath.toStdString());
+            onLuuDuLieu();
+            refreshEmployeeInfo();
+            QMessageBox::information(this, "Thanh cong", "Da cap nhat anh dai dien ca nhan thanh cong!");
+        }
+    }
+}
+
 void MainWindow::onEmpCapNhatLienHe() {
     std::string maNV = qlTK.getMaNVHienTai();
     NhanVien* nv = app.timNhanVien(maNV);
@@ -1096,9 +1187,18 @@ void MainWindow::onEmpThangLuongChanged() {
 }
 
 void MainWindow::onLuuDuLieu() {
+    app.layLich().chuanHoaLich();
     app.luuTatCa(thuMucDuLieu);
     qlTK.luuFile(thuMucDuLieu + "/taikhoan.csv");
     statusBar()->showMessage("Da luu du lieu an toan xuong dia!", 3000);
+}
+
+void MainWindow::onLuuDuLieuLich() {
+    onLuuDuLieu();
+    refreshDashboard();
+    refreshTableLichNgay();
+    QMessageBox::information(this, "Thanh Cong",
+        "Da luu lich lam viec thanh cong!\nDu lieu duoc dong bo va chuan hoa an toan, khong bi trung lap.");
 }
 
 void MainWindow::onDangXuat() {

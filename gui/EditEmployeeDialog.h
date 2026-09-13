@@ -4,40 +4,42 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QLabel>
-#include <memory>
 #include "NhanVien.h"
 
-class AddEmployeeDialog : public QDialog {
+class EditEmployeeDialog : public QDialog {
     Q_OBJECT
 
 private:
+    NhanVien* nhanVien;
     std::string thuMucDuLieu;
+
     QLabel* lblAvatar;
     QPushButton* btnChonAnh;
     QPushButton* btnXoaAnh;
-    QString duongDanAnh;
+    QString duongDanAnhMoi;
+    bool daXoaAnh;
 
     QLineEdit* editMaNV;
     QLineEdit* editHoTen;
     QLineEdit* editSDT;
     QLineEdit* editEmail;
-    QComboBox* comboLoaiNV;
+    QLabel* lblLoaiNV;
+    QLabel* lblNgayVaoLam;
+    QComboBox* comboTrangThai;
     QLineEdit* editLuongCoBan;
     QLineEdit* editPhuCap;
+
     QPushButton* btnSave;
     QPushButton* btnCancel;
 
-    std::unique_ptr<NhanVien> nhanVienMoi;
-
 public:
-    explicit AddEmployeeDialog(const std::string& maNVMoi, const std::string& dataDir = "data", QWidget* parent = nullptr);
-
-    std::unique_ptr<NhanVien> getNhanVienMoi();
+    explicit EditEmployeeDialog(NhanVien* nv, const std::string& dataDir, QWidget* parent = nullptr);
 
 private slots:
     void handleChonAnh();
     void handleXoaAnh();
-    void capNhatAvatarPreview();
-    void handleLoaiNVChanged(int index);
     void handleSave();
+
+private:
+    void capNhatHienThiAvatar();
 };

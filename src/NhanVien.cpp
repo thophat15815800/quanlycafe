@@ -18,10 +18,12 @@ TrangThaiNV chuoiToTrangThai(const std::string& s) {
 }
 
 NhanVien::NhanVien(std::string maNV, std::string hoTen, std::string sdt,
-                   std::string email, std::string ngayVaoLam, double luongCoBan)
+                   std::string email, std::string ngayVaoLam, double luongCoBan,
+                   std::string avatar)
     : maNV(std::move(maNV)), hoTen(std::move(hoTen)), sdt(std::move(sdt)),
       email(std::move(email)), ngayVaoLam(std::move(ngayVaoLam)),
-      luongCoBan(luongCoBan), trangThai(TrangThaiNV::DANG_LAM) {}
+      luongCoBan(luongCoBan), trangThai(TrangThaiNV::DANG_LAM),
+      avatar(std::move(avatar)) {}
 
 std::string NhanVien::getMaNV() const { return maNV; }
 std::string NhanVien::getHoTen() const { return hoTen; }
@@ -35,6 +37,8 @@ double NhanVien::getLuongCoBan() const { return luongCoBan; }
 void NhanVien::setLuongCoBan(double luong) { if (luong >= 0) luongCoBan = luong; }
 TrangThaiNV NhanVien::getTrangThai() const { return trangThai; }
 void NhanVien::setTrangThai(TrangThaiNV tt) { trangThai = tt; }
+std::string NhanVien::getAvatar() const { return avatar; }
+void NhanVien::setAvatar(const std::string& avt) { avatar = avt; }
 
 void NhanVien::hienThiThongTin() const {
     std::cout << std::left
