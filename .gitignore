@@ -1,0 +1,28 @@
+﻿# Build directories
+build/
+build_gui/
+bin/
+out/
+
+# Compiled object files and executables
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+
+# Qt generated files
+*_autogen/
+.rcc/
+.qmake.stash
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs and temporary files
+*.log
+scratch/
