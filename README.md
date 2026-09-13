@@ -4,6 +4,23 @@ He thong quan ly nhan su, ca lam viec, cham cong va tinh luong cho quan ca phe, 
 
 ---
 
+## ⚡ Danh Cho Dong Doi Moi Clone / Tai Du An Tu GitHub
+
+Khi tai ma nguon ve tu GitHub, cac file `.exe` mac dinh khong duoc day len de giu dung chuan repo sach. Dong doi chi can lam theo 2 buoc sau:
+
+### Buoc 1: Cai dat moi truong (Neu may chua co MSYS2 UCRT64 va Qt6)
+1. Cai dat [MSYS2](https://www.msys2.org/) (mac dinh tai `C:\msys64`).
+2. Mo **MSYS2 UCRT64** (tim trong Menu Start) va chay duy nhat 1 dong lenh sau:
+   ```bash
+   pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-qt6-base
+   ```
+
+### Buoc 2: Bien dich ra file `.exe`
+- Nhap dup chuot vao file **`Build_GUI.bat`** (hoac nhap dup **`Chay_App_GUI.bat`** - script se tu dong build neu chua co file `.exe`).
+- Ung dung se tu dong sinh ra file `quanlycafe_gui.exe` va khoi chay ngay lap tuc!
+
+---
+
 ## Cac Tinh Nang Chinh
 
 ### 1. Quan Ly Nhan Vien
@@ -42,31 +59,10 @@ quanlycafe/
 ├── gui/                   # Ma nguon giao dien do hoa Qt6 (MainWindow, LoginDialog, ...)
 ├── CMakeLists.txt         # Cau hinh build CMake cho GUI Qt6
 ├── Makefile               # Makefile cho phien ban Console CLI
+├── Build_GUI.bat          # Script bien dich tu dong ra file quanlycafe_gui.exe
 ├── Chay_App_GUI.bat       # Script khoi chay nhanh phien ban GUI
 └── README.md
 ```
-
----
-
-## Huong Dan Cai Dat & Bien Dich
-
-### Yeu cau he thong
-- Trinh bien dich C++ ho tro C++17 (GCC / MinGW-w64 / MSYS2 UCRT64).
-- Qt6 Base (phien ban Qt 6.x cho ban GUI).
-- CMake 3.16 tro len & Ninja/Make.
-
-### 1. Bien dich phien ban Console (CLI)
-```bash
-make
-./quanlycafe.exe
-```
-
-### 2. Bien dich phien ban Desktop GUI (Qt6)
-```powershell
-cmake -B build_gui -G "Ninja" -DCMAKE_BUILD_TYPE=Release
-cmake --build build_gui
-```
-Hoac chay truc tiep file `Chay_App_GUI.bat` tren Windows.
 
 ---
 
