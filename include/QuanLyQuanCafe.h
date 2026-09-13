@@ -19,6 +19,15 @@ struct ThongTinDashboard {
     int soNhanVienDuocXepCaHomNay = 0;
 };
 
+// Kết quả chấm công kèm phân loại trạng thái
+struct KetQuaChamCong {
+    bool thanhCong = false;
+    std::string thongBao = "";
+    std::string maCa = "";
+    std::string trangThai = ""; // "Dung gio", "Di muon", "Ve som", "Di muon & Ve som"
+    int codeLoi = 0; // 0: thành công, 1: chưa đến giờ vào ca (trước >30p), 2: chưa đến giờ tan ca, 3: không có ca, 4: lỗi khác
+};
+
 // Cấu trúc tiêu chí tìm kiếm và lọc nhân viên
 struct BoLocNhanVien {
     std::string tuKhoa = "";       // tìm trong mã, tên, SDT, email
@@ -80,7 +89,10 @@ public:
     LichLamViec& layLich();
     bool xepCa(const std::string& ngay, const std::string& maCa, const std::string& maNV);
 
-    // ---------- Chấm công ----------
+    // ---------- Chấm công thông minh & Phân loại ----------
+    KetQuaChamCong kiemTraVaChamCongVao(const std::string& maNV, const std::string& gioTuyChon = "");
+    KetQuaChamCong kiemTraVaChamCongRa(const std::string& maNV, const std::string& gioTuyChon = "", bool chapNhanVeSom = false);
+
     bool chamCongVao(const std::string& maNV);
     bool chamCongRa(const std::string& maNV);
     ChamCong& layChamCong();

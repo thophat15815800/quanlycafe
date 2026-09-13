@@ -297,8 +297,8 @@ void MainWindow::buildAdminTabs() {
     ccLayout->addLayout(ccTop);
 
     tableChamCong = new QTableWidget();
-    tableChamCong->setColumnCount(4);
-    tableChamCong->setHorizontalHeaderLabels({"Ma Nhan Vien", "Ngay", "Gio Vao", "Gio Ra"});
+    tableChamCong->setColumnCount(6);
+    tableChamCong->setHorizontalHeaderLabels({"Ma Nhan Vien", "Ngay", "Ma Ca", "Gio Vao", "Gio Ra", "Phan Loai"});
     tableChamCong->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     tableChamCong->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ccLayout->addWidget(tableChamCong);
@@ -500,8 +500,8 @@ void MainWindow::buildEmployeeTabs() {
     vlCC->addLayout(ccBtnLayout);
 
     tableEmpChamCong = new QTableWidget();
-    tableEmpChamCong->setColumnCount(3);
-    tableEmpChamCong->setHorizontalHeaderLabels({"Ngay", "Gio Vao", "Gio Ra"});
+    tableEmpChamCong->setColumnCount(5);
+    tableEmpChamCong->setHorizontalHeaderLabels({"Ngay", "Ma Ca", "Gio Vao", "Gio Ra", "Phan Loai"});
     tableEmpChamCong->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     tableEmpChamCong->setEditTriggers(QAbstractItemView::NoEditTriggers);
     vlCC->addWidget(tableEmpChamCong);
@@ -678,8 +678,30 @@ void MainWindow::refreshTableChamCong() {
     for (size_t i = 0; i < ds.size(); ++i) {
         tableChamCong->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(ds[i].maNV)));
         tableChamCong->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(ds[i].ngay)));
-        tableChamCong->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(ds[i].gioVao)));
-        tableChamCong->setItem(i, 3, new QTableWidgetItem(ds[i].gioRa.empty() ? "(Dang lam)" : QString::fromStdString(ds[i].gioRa)));
+        tableChamCong->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(ds[i].maCa.empty() ? "-" : ds[i].maCa)));
+        tableChamCong->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(ds[i].gioVao)));
+        tableChamCong->setItem(i, 4, new QTableWidgetItem(ds[i].gioRa.empty() ? "(Dang lam)" : QString::fromStdString(ds[i].gioRa)));
+
+        // Cột Phân Loại trạng thái
+        bool dangLam = ds[i].gioRa.empty();
+        QString ttStr = dangLam ? "Dang lam..." : QString::fromStdString(ds[i].trangThai.empty() ? "Dung gio" : ds[i].trangThai);
+        QTableWidgetItem* itTT = new QTableWidgetItem(ttStr);
+        itTT->setTextAlignment(Qt::AlignCenter);
+        QFont f = itTT->font();
+        f.setBold(true);
+        itTT->setFont(f);
+        if (dangLam) {
+            itTT->setForeground(QBrush(QColor("#1565C0")));
+        } else if (ds[i].trangThai == "Dung gio" || ds[i].trangThai.empty()) {
+            itTT->setForeground(QBrush(QColor("#2E7D32")));
+        } else if (ds[i].trangThai == "Di muon") {
+            itTT->setForeground(QBrush(QColor("#E65100")));
+        } else if (ds[i].trangThai == "Ve som") {
+            itTT->setForeground(QBrush(QColor("#D32F2F")));
+        } else {
+            itTT->setForeground(QBrush(QColor("#AD1457")));
+        }
+        tableChamCong->setItem(i, 5, itTT);
     }
 }
 
@@ -749,8 +771,30 @@ void MainWindow::refreshEmployeeChamCong() {
     tableEmpChamCong->setRowCount(ds.size());
     for (size_t i = 0; i < ds.size(); ++i) {
         tableEmpChamCong->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(ds[i].ngay)));
-        tableEmpChamCong->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(ds[i].gioVao)));
-        tableEmpChamCong->setItem(i, 2, new QTableWidgetItem(ds[i].gioRa.empty() ? "(Dang lam)" : QString::fromStdString(ds[i].gioRa)));
+        tableEmpChamCong->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(ds[i].maCa.empty() ? "-" : ds[i].maCa)));
+        tableEmpChamCong->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(ds[i].gioVao)));
+        tableEmpChamCong->setItem(i, 3, new QTableWidgetItem(ds[i].gioRa.empty() ? "(Dang lam)" : QString::fromStdString(ds[i].gioRa)));
+
+        // Cột Phân Loại trạng thái
+        bool dangLamRow = ds[i].gioRa.empty();
+        QString ttStr = dangLamRow ? "Dang lam..." : QString::fromStdString(ds[i].trangThai.empty() ? "Dung gio" : ds[i].trangThai);
+        QTableWidgetItem* itTT = new QTableWidgetItem(ttStr);
+        itTT->setTextAlignment(Qt::AlignCenter);
+        QFont f = itTT->font();
+        f.setBold(true);
+        itTT->setFont(f);
+        if (dangLamRow) {
+            itTT->setForeground(QBrush(QColor("#1565C0")));
+        } else if (ds[i].trangThai == "Dung gio" || ds[i].trangThai.empty()) {
+            itTT->setForeground(QBrush(QColor("#2E7D32")));
+        } else if (ds[i].trangThai == "Di muon") {
+            itTT->setForeground(QBrush(QColor("#E65100")));
+        } else if (ds[i].trangThai == "Ve som") {
+            itTT->setForeground(QBrush(QColor("#D32F2F")));
+        } else {
+            itTT->setForeground(QBrush(QColor("#AD1457")));
+        }
+        tableEmpChamCong->setItem(i, 4, itTT);
     }
 }
 
@@ -990,32 +1034,50 @@ void MainWindow::onXoaCaBoSung() {
 void MainWindow::onAdminChamCongVao() {
     std::string maNV = editMaNVChamCong->text().trimmed().toStdString();
     if (maNV.empty()) {
-        QMessageBox::warning(this, "Thong bao", "Vui long nhap Ma nhan vien!");
+        QMessageBox::warning(this, "Thong bao", "Vui long nhap Ma nhan vien can check-in!");
         return;
     }
-    if (app.chamCongVao(maNV)) {
+
+    auto kq = app.kiemTraVaChamCongVao(maNV);
+    if (kq.thanhCong) {
         onLuuDuLieu();
         refreshDashboard();
         refreshTableChamCong();
-        QMessageBox::information(this, "Thanh cong", QString("Da check-in cho NV %1!").arg(QString::fromStdString(maNV)));
+        QMessageBox::information(this, "Thanh cong", QString::fromStdString(kq.thongBao));
     } else {
-        QMessageBox::warning(this, "That bai", "Nhan vien khong ton tai hoac da check-in roi!");
+        QMessageBox::warning(this, "Khong the check-in", QString::fromStdString(kq.thongBao));
     }
 }
 
 void MainWindow::onAdminChamCongRa() {
     std::string maNV = editMaNVChamCong->text().trimmed().toStdString();
     if (maNV.empty()) {
-        QMessageBox::warning(this, "Thong bao", "Vui long nhap Ma nhan vien!");
+        QMessageBox::warning(this, "Thong bao", "Vui long nhap Ma nhan vien can check-out!");
         return;
     }
-    if (app.chamCongRa(maNV)) {
+
+    auto kq = app.kiemTraVaChamCongRa(maNV, "", false);
+    if (kq.thanhCong) {
         onLuuDuLieu();
         refreshDashboard();
         refreshTableChamCong();
-        QMessageBox::information(this, "Thanh cong", QString("Da check-out cho NV %1!").arg(QString::fromStdString(maNV)));
+        QMessageBox::information(this, "Thanh cong", QString::fromStdString(kq.thongBao));
+    } else if (kq.codeLoi == 2) {
+        // Chưa đến giờ kết thúc ca quy định
+        int ans = QMessageBox::question(this, "Chua den gio quy dinh",
+            QString::fromStdString(kq.thongBao) + "\n\nBan co muon xac nhan Check-out VE SOM cho NV nay khong?",
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ans == QMessageBox::Yes) {
+            auto kq2 = app.kiemTraVaChamCongRa(maNV, "", true);
+            if (kq2.thanhCong) {
+                onLuuDuLieu();
+                refreshDashboard();
+                refreshTableChamCong();
+                QMessageBox::information(this, "Thanh cong", QString::fromStdString(kq2.thongBao));
+            }
+        }
     } else {
-        QMessageBox::warning(this, "That bai", "Nhan vien chua check-in!");
+        QMessageBox::warning(this, "Khong the check-out", QString::fromStdString(kq.thongBao));
     }
 }
 
@@ -1161,24 +1223,40 @@ void MainWindow::onEmpDoiMatKhau() {
 
 void MainWindow::onEmpChamCongVao() {
     std::string maNV = qlTK.getMaNVHienTai();
-    if (app.chamCongVao(maNV)) {
+    auto kq = app.kiemTraVaChamCongVao(maNV);
+    if (kq.thanhCong) {
         onLuuDuLieu();
         refreshEmployeeChamCong();
-        QMessageBox::information(this, "Thanh cong", "Ban da cham cong VAO ca thanh cong!");
+        QMessageBox::information(this, "Thanh cong", QString::fromStdString(kq.thongBao));
     } else {
-        QMessageBox::warning(this, "Loi", "Ban da check-in roi, chua check-out ca truoc!");
+        QMessageBox::warning(this, "Thong bao cham cong", QString::fromStdString(kq.thongBao));
     }
 }
 
 void MainWindow::onEmpChamCongRa() {
     std::string maNV = qlTK.getMaNVHienTai();
-    if (app.chamCongRa(maNV)) {
+    auto kq = app.kiemTraVaChamCongRa(maNV, "", false);
+    if (kq.thanhCong) {
         onLuuDuLieu();
         refreshEmployeeChamCong();
         refreshEmployeeLuong();
-        QMessageBox::information(this, "Thanh cong", "Ban da cham cong RA ca thanh cong!");
+        QMessageBox::information(this, "Thanh cong", QString::fromStdString(kq.thongBao));
+    } else if (kq.codeLoi == 2) {
+        // Chưa đến giờ kết thúc ca quy định
+        int ans = QMessageBox::question(this, "Chua den gio tan ca quy dinh",
+            QString::fromStdString(kq.thongBao) + "\n\nBan co chac chan muon xac nhan Check-out VE SOM khong?\n(Trang thai se duoc ghi nhan la 'Ve som')",
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ans == QMessageBox::Yes) {
+            auto kq2 = app.kiemTraVaChamCongRa(maNV, "", true);
+            if (kq2.thanhCong) {
+                onLuuDuLieu();
+                refreshEmployeeChamCong();
+                refreshEmployeeLuong();
+                QMessageBox::information(this, "Thanh cong", QString::fromStdString(kq2.thongBao));
+            }
+        }
     } else {
-        QMessageBox::warning(this, "Loi", "Ban chua check-in!");
+        QMessageBox::warning(this, "Khong the check-out", QString::fromStdString(kq.thongBao));
     }
 }
 

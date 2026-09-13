@@ -154,17 +154,156 @@ bool QuanLyQuanCafe::xepCa(const std::string& ngay, const std::string& maCa, con
     return ok;
 }
 
+KetQuaChamCong QuanLyQuanCafe::kiemTraVaChamCongVao(const std::string& maNV, const std::string& gioTuyChon) {
+    NhanVien* nv = timNhanVien(maNV);
+    if (!nv) {
+        return {false, "Nhan vien khong ton tai!", "", "", 4};
+    }
+    if (nv->getTrangThai() == TrangThaiNV::DA_NGHI_VIEC) {
+        return {false, "Nhan vien nay da nghi viec, khong the cham cong!", "", "", 4};
+    }
+    if (chamCong.dangTrongCa(maNV)) {
+        return {false, "Ban dang trong ca lam viec, chua check-out ca truoc!", "", "", 4};
+    }
+
+    std::string ngay = Utils::ngayHomNay();
+    std::string gio = gioTuyChon.empty() ? Utils::gioHienTai() : gioTuyChon;
+    int phutHienTai = Utils::gioToPhut(gio);
+
+    // Lấy các ca mà nhân viên được phân công trong ngày hôm nay
+    auto dsCaNgay = lich.xemLichNgay(ngay);
+    std::vector<CaLamViec> caCuaNV;
+    for (const auto& c : dsCaNgay) {
+        if (c.coNhanVien(maNV)) {
+            caCuaNV.push_back(c);
+        }
+    }
+
+    if (caCuaNV.empty()) {
+        return {false, "Hom nay nhan vien " + maNV + " khong co lich lam viec nao duoc phan cong!", "", "", 3};
+    }
+
+    // Sắp xếp các ca của NV theo giờ bắt đầu tăng dần
+    std::sort(caCuaNV.begin(), caCuaNV.end(), [](const CaLamViec& a, const CaLamViec& b) {
+        return Utils::gioToPhut(a.getGioBatDau()) < Utils::gioToPhut(b.getGioBatDau());
+    });
+
+    // Lấy danh sách các ca mà NV đã hoàn thành trong ngày hôm nay
+    std::vector<std::string> caDaXong;
+    for (const auto& bg : chamCong.lichSuNgay(ngay)) {
+        if (bg.maNV == maNV && !bg.gioRa.empty() && !bg.maCa.empty()) {
+            caDaXong.push_back(bg.maCa);
+        }
+    }
+
+    // Lọc các ca chưa hoàn thành
+    std::vector<CaLamViec> caChuaLam;
+    for (const auto& c : caCuaNV) {
+        bool daXong = false;
+        for (const auto& ma : caDaXong) {
+            if (ma == c.getMaCa()) { daXong = true; break; }
+        }
+        if (!daXong) {
+            caChuaLam.push_back(c);
+        }
+    }
+
+    if (caChuaLam.empty()) {
+        return {false, "Ban da hoan thanh tat ca cac ca lam viec duoc phan cong trong ngay hom nay!", "", "", 4};
+    }
+
+    // Tìm ca phù hợp để check-in:
+    // Khung giờ hợp lệ: phutBatDau - 30 <= phutHienTai <= phutKetThuc
+    const CaLamViec* caHopLe = nullptr;
+    for (const auto& c : caChuaLam) {
+        int phutBD = Utils::gioToPhut(c.getGioBatDau());
+        int phutKT = Utils::gioToPhut(c.getGioKetThuc());
+        int phutChoPhep = phutBD - 30;
+        if (phutHienTai >= phutChoPhep && phutHienTai <= phutKT) {
+            caHopLe = &c;
+            break;
+        }
+    }
+
+    if (caHopLe) {
+        int phutBD = Utils::gioToPhut(caHopLe->getGioBatDau());
+        std::string trangThai = (phutHienTai <= phutBD) ? "Dung gio" : "Di muon";
+        chamCong.checkIn(maNV, ngay, gio, caHopLe->getMaCa(), trangThai);
+        ghiNhatKy("Cham cong VAO: " + maNV + " - " + caHopLe->getMaCa() + " (" + trangThai + ")");
+
+        std::string msg = "Cham cong VAO ca " + caHopLe->getTenCa() + " (" + caHopLe->getGioBatDau() + " - " + caHopLe->getGioKetThuc() + ") thanh cong!\nPhan loai: " + (trangThai == "Dung gio" ? "Dung gio" : "Di muon");
+        return {true, msg, caHopLe->getMaCa(), trangThai, 0};
+    }
+
+    // Nếu không có ca nào trong khung giờ hợp lệ:
+    // Tìm ca tiếp theo chưa đến giờ (phutHienTai < phutBD - 30)
+    for (const auto& c : caChuaLam) {
+        int phutBD = Utils::gioToPhut(c.getGioBatDau());
+        int phutChoPhep = phutBD - 30;
+        if (phutHienTai < phutChoPhep) {
+            char b[16];
+            snprintf(b, sizeof(b), "%02d:%02d", phutChoPhep / 60, phutChoPhep % 60);
+            std::string gioChoPhep(b);
+            std::string msg = "Chua den thoi gian cham cong!\nQuy dinh: Chi duoc cham cong truoc gio vao ca toi da 30 phut.\nBan co the check-in tu " + gioChoPhep + " cho ca " + c.getTenCa() + " [" + c.getGioBatDau() + " - " + c.getGioKetThuc() + "].";
+            return {false, msg, c.getMaCa(), "", 1};
+        }
+    }
+
+    // Nếu tất cả các ca đều đã qua giờ kết thúc
+    return {false, "Cac ca lam viec trong ngay cua ban deu da qua gio ket thuc!", "", "", 4};
+}
+
+KetQuaChamCong QuanLyQuanCafe::kiemTraVaChamCongRa(const std::string& maNV, const std::string& gioTuyChon, bool chapNhanVeSom) {
+    if (!chamCong.dangTrongCa(maNV)) {
+        return {false, "Nhan vien chua check-in ca lam viec!", "", "", 4};
+    }
+
+    const BanGhiChamCong* bg = chamCong.layBanGhiDangMo(maNV);
+    if (!bg) {
+        return {false, "Khong tim thay ban ghi dang lam viec!", "", "", 4};
+    }
+
+    std::string ngay = bg->ngay;
+    std::string gio = gioTuyChon.empty() ? Utils::gioHienTai() : gioTuyChon;
+    int phutHienTai = Utils::gioToPhut(gio);
+
+    CaLamViec* ca = lich.timCa(bg->ngay, bg->maCa);
+    if (ca) {
+        int phutKT = Utils::gioToPhut(ca->getGioKetThuc());
+        if (phutHienTai < phutKT) {
+            // Chưa đến giờ kết thúc ca quy định
+            if (!chapNhanVeSom) {
+                std::string msg = "Chua den gio ket thuc ca quy dinh (" + ca->getGioKetThuc() + ")!\nQuy dinh check-out phai tu " + ca->getGioKetThuc() + " tro di.";
+                return {false, msg, ca->getGioKetThuc(), bg->trangThai, 2};
+            } else {
+                // Xác nhận về sớm
+                std::string trangThaiMoi = (bg->trangThai == "Di muon") ? "Di muon & Ve som" : "Ve som";
+                chamCong.checkOut(maNV, ngay, gio, trangThaiMoi);
+                ghiNhatKy("Cham cong RA: " + maNV + " - " + bg->maCa + " (" + trangThaiMoi + ")");
+                return {true, "Da check-out ca " + ca->getTenCa() + " thanh cong!\nPhan loai: " + trangThaiMoi, bg->maCa, trangThaiMoi, 0};
+            }
+        } else {
+            // Đúng giờ kết thúc ca trở đi
+            std::string tt = bg->trangThai;
+            chamCong.checkOut(maNV, ngay, gio, tt);
+            ghiNhatKy("Cham cong RA: " + maNV + " - " + bg->maCa + " (" + tt + ")");
+            return {true, "Da check-out ca " + ca->getTenCa() + " thanh cong!\nPhan loai: " + (tt == "Dung gio" ? "Dung gio" : tt), bg->maCa, tt, 0};
+        }
+    }
+
+    // Không tìm thấy thông tin ca (ngoại lệ ca tự do)
+    chamCong.checkOut(maNV, ngay, gio, bg->trangThai);
+    return {true, "Da check-out thanh cong!", "", bg->trangThai, 0};
+}
+
 bool QuanLyQuanCafe::chamCongVao(const std::string& maNV) {
-    if (!timNhanVien(maNV)) return false;
-    bool ok = chamCong.checkIn(maNV, Utils::ngayHomNay(), Utils::gioHienTai());
-    if (ok) ghiNhatKy("Cham cong VAO: " + maNV);
-    return ok;
+    auto kq = kiemTraVaChamCongVao(maNV);
+    return kq.thanhCong;
 }
 
 bool QuanLyQuanCafe::chamCongRa(const std::string& maNV) {
-    bool ok = chamCong.checkOut(maNV, Utils::ngayHomNay(), Utils::gioHienTai());
-    if (ok) ghiNhatKy("Cham cong RA: " + maNV);
-    return ok;
+    auto kq = kiemTraVaChamCongRa(maNV, "", false);
+    return kq.thanhCong;
 }
 
 ChamCong& QuanLyQuanCafe::layChamCong() { return chamCong; }

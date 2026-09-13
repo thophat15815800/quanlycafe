@@ -6,9 +6,11 @@
 // Một bản ghi chấm công (1 lượt vào-ra trong ngày)
 struct BanGhiChamCong {
     std::string maNV;
-    std::string ngay;     // dd/mm/yyyy
-    std::string gioVao;   // HH:MM
-    std::string gioRa;    // HH:MM, rỗng nếu chưa check-out
+    std::string ngay;       // dd/mm/yyyy
+    std::string gioVao;     // HH:MM
+    std::string gioRa;      // HH:MM, rỗng nếu chưa check-out
+    std::string maCa;       // Mã ca làm việc (VD: CA_TOI, CA_SANG...)
+    std::string trangThai;  // "Dung gio", "Di muon", "Ve som", "Di muon & Ve som", "(Dang lam)"
 };
 
 // Quản lý chấm công toàn quán.
@@ -20,9 +22,12 @@ private:
     std::unordered_map<std::string, int> dangMoCa; // maNV -> vị trí bản ghi chưa check-out
 
 public:
-    bool checkIn(const std::string& maNV, const std::string& ngay, const std::string& gio);
-    bool checkOut(const std::string& maNV, const std::string& ngay, const std::string& gio);
+    bool checkIn(const std::string& maNV, const std::string& ngay, const std::string& gio,
+                 const std::string& maCa = "", const std::string& trangThai = "Dung gio");
+    bool checkOut(const std::string& maNV, const std::string& ngay, const std::string& gio,
+                  const std::string& trangThaiMoi = "");
     bool dangTrongCa(const std::string& maNV) const;
+    const BanGhiChamCong* layBanGhiDangMo(const std::string& maNV) const;
 
     // Tổng số giờ đã làm của 1 nhân viên trong 1 tháng (mm/yyyy)
     double tongGioLamThang(const std::string& maNV, const std::string& thangNam) const;
