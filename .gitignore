@@ -26,3 +26,7 @@ out/
 # Logs and temporary files
 *.log
 scratch/
+
+# Release and zip packages
+QuanLyCafe_Release/
+*.zip
