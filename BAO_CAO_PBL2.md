@@ -1,4 +1,4 @@
-﻿# BÁO CÁO ĐỒ ÁN PBL2: LẬP TRÌNH HƯỚNG ĐỐI TƯỢNG (C++)
+# BÁO CÁO ĐỒ ÁN PBL2: LẬP TRÌNH HƯỚNG ĐỐI TƯỢNG (C++)
 # ĐỀ TÀI: HỆ THỐNG QUẢN LÝ NHÂN VIÊN QUÁN CÀ PHÊ
 ### (Coffee Shop Employee Management System - Qt6 & CLI)
 
@@ -186,9 +186,11 @@ Trong hoạt động kinh doanh quán cà phê (F&B), việc quản lý nhân s�
    - Luôn tự động duy trì 3 ca chuẩn mỗi ngày: Ca Sáng (07:00-12:00), Ca Chiều (12:00-17:00), Ca Tối (17:00-22:00).
    - Thêm ca bổ sung linh hoạt và xóa ca bổ sung khi không còn nhu cầu.
    - Chỉ định nhân viên vào ca qua danh sách chọn, tự động kiểm tra chống trùng giờ.
-4. **Quản lý Chấm công & Tính lương:**
-   - Quản trị viên có thể hỗ trợ check-in / check-out trực tiếp cho nhân viên.
-   - Tự động tính toán số giờ làm việc thực tế trong tháng và xuất bảng lương tổng quỹ lương của quán.
+4. **Quản lý Chấm công thông minh (Smart Timekeeping) & Tính lương:**
+   - Hệ thống chấm công tự động phân loại trạng thái: **Đúng giờ**, **Đi muộn**, **Về sớm**.
+   - **Quy tắc 30 phút:** Cho phép nhân viên check-in sớm tối đa 30 phút trước giờ ca bắt đầu, chặn check-in ngoài phạm vi ca.
+   - Kiểm tra logic check-out hợp lệ (phải check-in trước mới được check-out).
+   - Tự động tính toán tổng số giờ làm việc thực tế trong tháng và xuất bảng lương tổng quỹ lương của quán.
 5. **Quản lý Tài khoản & Phân quyền:**
    - Cấp tài khoản đăng nhập cho nhân viên mới.
    - Reset mật khẩu về mặc định (`123456`).
